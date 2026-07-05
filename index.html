@@ -10,233 +10,7 @@
 <meta name="theme-color" content="#0d2818">
 <title>Lifelog</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230d2818'/%3E%3Ccircle cx='90' cy='108' r='30' fill='none' stroke='%234ade80' stroke-width='6'/%3E%3Cline x1='90' y1='108' x2='90' y2='86' stroke='%234ade80' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='90' y1='108' x2='106' y2='108' stroke='%23a3e635' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
-<style>
-  :root{
-    --bg:#ffffff; --surface:#ffffff; --surface2:#f5f6f8; --surface3:#eceef2;
-    --text:#1a1d24; --muted:#616875; --faint:#9aa0ad;
-    --accent:#16a34a; --accent-dim:#15803d; --leaf:#4d9a2a; --teal:#0f9d8c; --rose:#dc2626;
-    --line:#e6e8ec; --line2:#d5d8de;
-    --ok:#0f9d8c; --warn:#d97706; --bad:#dc2626;
-    --r:12px; --r-sm:9px;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--text);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    font-size:15px; line-height:1.45;
-    padding-bottom:env(safe-area-inset-bottom);
-    -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3{margin:0;font-weight:650}
-  button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
-  input,select,textarea{font-family:inherit;font-size:15px}
-  .wrap{max-width:640px;margin:0 auto;padding:0 16px}
-  .hidden{display:none!important}
-
-  /* header */
-  header{
-    position:sticky;top:0;z-index:40;
-    background:linear-gradient(180deg,rgba(230,247,235,.95),rgba(255,255,255,.92));
-    backdrop-filter:blur(10px);
-    padding:calc(env(safe-area-inset-top) + 14px) 0 10px;
-    border-bottom:1px solid #d3ead9;
-  }
-  .hrow{display:flex;align-items:center;gap:12px}
-  .brand{font-size:20px;font-weight:750;letter-spacing:-.02em;color:var(--accent-dim)}
-  .brand .leaf{margin-right:6px;font-size:18px;filter:drop-shadow(0 1px 1px rgba(21,128,61,.25))}
-  .brand .dot{color:var(--accent)}
-  .htools{margin-left:auto;display:flex;gap:8px}
-  .icb{
-    height:34px;padding:0 14px;border-radius:8px;background:var(--surface2);
-    display:grid;place-items:center;color:var(--muted);font-size:13px;font-weight:600;
-    border:1px solid var(--line);
-  }
-  .icb:active{background:var(--surface3)}
-
-  /* global range */
-  .range-bar{margin-top:12px}
-  .range-slider{width:100%;padding:0 8px}
-  .range-slider input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:999px;
-    background:var(--surface3);outline:none;margin:6px 0 0}
-  .range-slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;
-    border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 1px 4px rgba(21,128,61,.4);cursor:pointer}
-  .range-slider input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
-    background:var(--accent);border:3px solid #fff;box-shadow:0 1px 4px rgba(21,128,61,.4);cursor:pointer}
-  .range-slider input[type=range]:disabled{opacity:.4}
-  .range-top{display:flex;align-items:center;gap:8px;margin-bottom:2px}
-  .range-top .rlbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700}
-  .range-top #rangeVal{margin-left:auto;font-size:13px;font-weight:750;color:var(--accent-dim)}
-  .allbtn{padding:4px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);
-    font-size:12px;font-weight:650;color:var(--muted)}
-  .allbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-  /* nutrition steppers */
-  .meal-tabs{display:flex;gap:8px;margin-bottom:14px}
-  .meal-tabs button{flex:1;padding:10px 4px;border-radius:var(--r-sm);background:var(--surface2);
-    border:1px solid var(--line);font-weight:650;color:var(--muted);font-size:13px}
-  .meal-tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .nut-grid{display:flex;flex-direction:column;gap:10px}
-  .stepper{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
-    border-radius:var(--r-sm);padding:10px 12px}
-  .stepper .nlab{font-size:14px;font-weight:650;line-height:1.2}
-  .stepper .nlab small{display:block;font-size:11px;color:var(--faint);font-weight:600;margin-top:2px}
-  .stepper .nctrl{margin-left:auto;display:flex;align-items:center;gap:8px}
-  .stepper .stbtn{width:36px;height:36px;border-radius:9px;background:var(--surface2);border:1px solid var(--line2);
-    font-size:20px;font-weight:700;color:var(--accent-dim);display:grid;place-items:center;line-height:1}
-  .stepper .stbtn:active{background:var(--surface3)}
-  .stepper .nval{min-width:58px;text-align:center;font-size:16px;font-weight:750}
-  .stepper .nval small{font-size:11px;color:var(--muted);font-weight:600;margin-left:1px}
-  .counter{display:inline-flex;align-items:center;gap:12px}
-  .counter .cv{min-width:48px}
-  .micro-head{display:flex;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:12px;
-    text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700}
-  .micro-head span{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:600;color:var(--faint)}
-  .micro-wrap{display:flex;flex-wrap:wrap;gap:8px}
-  .mchip{padding:7px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);
-    font-size:12px;font-weight:600;color:var(--muted)}
-  .mchip.on{background:var(--leaf);color:#fff;border-color:var(--leaf)}
-  .chip{
-    flex:0 0 auto;padding:7px 14px;border-radius:999px;background:var(--surface2);
-    color:var(--muted);font-size:13px;font-weight:600;border:1px solid var(--line);white-space:nowrap;
-  }
-  .chip.on{background:var(--accent);color:#ffffff;border-color:var(--accent)}
-
-  main{padding:18px 0 90px}
-
-  /* throttle gauge signature */
-  .gauge-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 12px;text-align:center}
-  .gauge-card .gt{display:flex;align-items:baseline;text-align:left}
-  .gauge-card .gt b{font-size:13px;font-weight:700;letter-spacing:.02em}
-  .gauge-card .gt span{margin-left:auto;font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
-  .gauge-svg{width:230px;max-width:80%;height:auto;display:block;margin:2px auto -6px}
-  .g-num{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
-  .g-num small{font-size:15px;font-weight:700;color:var(--muted)}
-  .g-word{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
-  .g-hint{font-size:11px;color:var(--faint);margin-top:6px}
-
-  .today-h{display:flex;align-items:baseline;gap:10px;margin:20px 2px 12px}
-  .today-h h2{font-size:17px}
-  .today-h .date{color:var(--muted);font-size:13px;margin-left:auto}
-
-  /* module grid */
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .card{
-    background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
-    padding:14px;position:relative;overflow:hidden;text-align:left;width:100%;
-    transition:transform .08s;
-  }
-  .card:active{transform:scale(.98)}
-  .card .ic{font-size:20px;margin-bottom:8px;display:block}
-  .card .nm{font-size:14px;font-weight:650}
-  .card .st{font-size:12px;color:var(--muted);margin-top:3px;min-height:16px}
-  .card .big{font-size:22px;font-weight:750;margin-top:6px;letter-spacing:-.02em}
-  .card .big small{font-size:12px;color:var(--muted);font-weight:600}
-  .card .streak{position:absolute;top:12px;right:12px;font-size:11px;color:var(--accent);font-weight:700}
-  .card .accentbar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.0}
-  .card.done .accentbar{opacity:1}
-
-  /* full-screen sheet */
-  .sheet{
-    position:fixed;inset:0;z-index:60;background:var(--bg);
-    transform:translateY(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);
-    overflow-y:auto;padding-bottom:40px;
-  }
-  .sheet.open{transform:translateY(0)}
-  .sheet-h{
-    position:sticky;top:0;background:var(--bg);z-index:5;
-    padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;border-bottom:1px solid var(--line);
-    display:flex;align-items:center;gap:12px;
-  }
-  .sheet-h .ttl{font-size:18px;font-weight:700}
-  .sheet-h .ttl .ic{margin-right:6px}
-  .close{margin-left:auto;width:36px;height:36px;border-radius:10px;background:var(--surface2);display:grid;place-items:center;font-size:16px;color:var(--muted)}
-  .sec{margin:18px 16px}
-  .sec-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);font-weight:700;margin:0 2px 10px}
-
-  /* fields */
-  .field{margin-bottom:14px}
-  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
-  .field .unit{color:var(--faint);font-weight:500}
-  .inp{
-    width:100%;padding:12px 14px;background:var(--surface);border:1px solid var(--line2);
-    border-radius:var(--r-sm);color:var(--text);outline:none;
-  }
-  .inp:focus{border-color:var(--accent)}
-  textarea.inp{resize:vertical;min-height:60px}
-  /* scale buttons */
-  .scale{display:flex;gap:6px;flex-wrap:wrap}
-  .scale button{
-    flex:1;min-width:34px;padding:11px 0;background:var(--surface);border:1px solid var(--line2);
-    border-radius:9px;color:var(--muted);font-weight:650;font-size:14px;
-  }
-  .scale button.on{background:var(--accent);color:#ffffff;border-color:var(--accent)}
-  /* toggle */
-  .tgl{display:flex;gap:8px}
-  .tgl button{flex:1;padding:12px;background:var(--surface);border:1px solid var(--line2);border-radius:var(--r-sm);color:var(--muted);font-weight:650}
-  .tgl button.on-y{background:var(--teal);color:#ffffff;border-color:var(--teal)}
-  .tgl button.on-n{background:var(--surface3);color:var(--text);border-color:var(--line2)}
-
-  .btn{
-    display:block;width:100%;padding:14px;background:var(--accent);color:#ffffff;
-    border-radius:var(--r-sm);font-weight:750;font-size:15px;text-align:center;
-  }
-  .btn:active{background:var(--accent-dim)}
-  .btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line2)}
-  .btn.mini{padding:10px;font-size:13px}
-  .btn-row{display:flex;gap:10px}
-
-  /* history rows */
-  .row{
-    display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);
-    border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px;
-  }
-  .row .rd{font-size:12px;color:var(--muted);min-width:52px}
-  .row .rv{flex:1;font-size:14px}
-  .row .del{color:var(--faint);font-size:16px;padding:4px 8px}
-  .empty{color:var(--faint);text-align:center;padding:24px;font-size:14px}
-
-  /* chart */
-  .chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 8px 8px}
-  .chart-top{display:flex;align-items:center;gap:8px;padding:0 8px 10px}
-  .metric-sel{margin-left:auto}
-  select.mini-sel{background:var(--surface2);border:1px solid var(--line2);border-radius:8px;color:var(--text);padding:7px 10px;font-size:12px}
-  svg.chart{display:block;width:100%;height:150px}
-  .cstat{display:flex;gap:16px;padding:6px 10px 2px;font-size:12px;color:var(--muted)}
-  .cstat b{color:var(--text);font-weight:700}
-
-  /* range override in sheet */
-  .rov{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:6px}
-  .rov::-webkit-scrollbar{display:none}
-  .rov .chip{padding:6px 12px;font-size:12px}
-
-  /* add-param */
-  .addparam{display:flex;gap:8px;margin-top:4px}
-  .addparam .inp{flex:1}
-  .param-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line2);border-radius:999px;padding:5px 10px;font-size:12px;margin:0 6px 6px 0;color:var(--muted)}
-  .param-tag .x{color:var(--faint);font-weight:700}
-
-  /* toast */
-  .toast{
-    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
-    background:var(--surface3);color:var(--text);padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;
-    border:1px solid var(--line2);opacity:0;transition:.25s;z-index:100;pointer-events:none;white-space:nowrap;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-  /* settings sheet list */
-  .setrow{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px}
-  .setrow .si{font-size:18px}
-  .setrow .sv{flex:1}
-  .setrow .sv b{display:block;font-size:14px}
-  .setrow .sv span{font-size:12px;color:var(--muted)}
-  .weekly-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
-  .wk-line{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
-  .wk-line:last-child{border:none}
-  .wk-line .v{font-weight:700}
-  .install-note{background:var(--surface2);border:1px dashed var(--line2);border-radius:var(--r);padding:14px;font-size:13px;color:var(--muted);line-height:1.5}
-  .install-note b{color:var(--text)}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -317,7 +91,9 @@
 const KEY="lifelog.v1";
 const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast("Save failed — storage full?");}}
+function save(){DB.settings=DB.settings||{};DB.settings._updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast("Save failed — storage full?");}schedulePush();}
+let _pushT=null;
+function schedulePush(){const c=ghCfg();if(!c||!c.token)return;clearTimeout(_pushT);_pushT=setTimeout(()=>ghPush(false),2500);}
 
 /* ============ module definitions ============
    type: number | scale(1-10) | time | bool | text | select
@@ -454,7 +230,7 @@ const MOD=Object.fromEntries(MODULES.map(m=>[m.id,m]));
 
 /* ============ default DB (preloaded, editable) ============ */
 function freshDB(){
-  const db={settings:{globalRange:"30d",dummy:true,_seeded:false},modules:{}};
+  const db={settings:{globalRange:"30d"},modules:{}};
   MODULES.forEach(m=>{db.modules[m.id]={entries:{},params:[],range:null};});
   // preload context (editable): habits already defined; seed study roadmap & known items as hints via params/notes
   db.modules.study.params=[]; 
@@ -836,6 +612,7 @@ function openSettings(){buildSettings();document.getElementById("setSheet").clas
 function closeSet(){document.getElementById("setSheet").classList.remove("open");document.body.style.overflow="";}
 function buildSettings(){
   let count=0;MODULES.forEach(m=>{const md=DB.modules[m.id];Object.values(md.entries).forEach(v=>count+=m.multi?v.length:1);});
+  const gh=ghCfg();
   document.getElementById("setBody").innerHTML=`
    <div class="sec"><div class="sec-t">Backup — do this weekly</div>
      <div class="setrow"><span class="si">💾</span><div class="sv"><b>${count} entries stored</b><span>on this device only (browser storage)</span></div></div>
@@ -848,11 +625,21 @@ function buildSettings(){
    <div class="sec"><div class="sec-t">Install as app</div>
      <div class="install-note"><b>iPhone:</b> open in Safari → Share button → <b>Add to Home Screen</b>. Opens full-screen like a real app, works offline.<br><br>Data lives in this browser. If you clear Safari data it is lost — so <b>export a backup weekly</b> to Files/iCloud.</div>
    </div>
-   <div class="sec"><div class="sec-t">Sample data</div>
-     <div class="setrow"><div class="sv"><b>Demo month</b><span>${DB.settings.dummy?"showing example logs":"hidden"}</span></div>
-       <button class="btn mini" style="width:auto;padding:9px 16px;${DB.settings.dummy?"":"background:var(--surface2);color:var(--text);border:1px solid var(--line2)"}" onclick="toggleDummy()">${DB.settings.dummy?"Turn off":"Turn on"}</button>
+   <div class="sec"><div class="sec-t">Cloud sync (GitHub Gist)</div>
+     <p style="font-size:12px;color:var(--muted);margin:0 2px 10px">One private Gist holds your data. Same data on every device. Make a token at github.com/settings/tokens (classic) with <b>gist</b> scope only. Paste it once per device.</p>
+     <div class="field"><label>GitHub token</label><input class="inp" id="ghTok" type="password" placeholder="ghp_..." value="${gh.token||''}"></div>
+     <div class="field"><label>Gist ID <span class="unit">leave blank to create new</span></label><input class="inp" id="ghGist" type="text" placeholder="auto-created on first sync" value="${gh.gistId||''}"></div>
+     <div class="btn-row">
+       <button class="btn" onclick="ghSaveCfg()">Save & sync now</button>
+       <button class="btn ghost" onclick="ghPull(true)">Pull from cloud</button>
      </div>
-     <p style="font-size:12px;color:var(--muted);margin:6px 2px 0">Off removes only sample entries. Your real logs stay.</p>
+     <p style="font-size:12px;color:var(--muted);margin:8px 2px 0" id="ghStat">${gh.token?(gh.gistId?("Linked to gist "+gh.gistId.slice(0,8)+"… · last sync "+(DB.settings._synced?new Date(DB.settings._synced).toLocaleString():"never")):"Token set — press Save & sync to create gist"):"Not set up — enter a token"}</p>
+   </div>
+   <div class="sec"><div class="sec-t">Clean data by date range</div>
+     <div class="field"><label>From</label><input class="inp" id="clrFrom" type="date"></div>
+     <div class="field"><label>To</label><input class="inp" id="clrTo" type="date"></div>
+     <button class="btn ghost" style="color:var(--rose)" onclick="clearRange()">Delete entries in range</button>
+     <p style="font-size:12px;color:var(--muted);margin:6px 2px 0">Removes all logs from From to To (inclusive), across every module.</p>
    </div>
    <div class="sec"><div class="sec-t">Danger</div>
      <button class="btn ghost" style="color:var(--rose)" onclick="wipe()">Erase all data</button>
@@ -868,6 +655,82 @@ window.importData=function(ev){const f=ev.target.files[0];if(!f)return;const r=n
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.modules)throw 0;DB=d;MODULES.forEach(m=>{if(!DB.modules[m.id])DB.modules[m.id]={entries:{},params:[],range:null};if(!DB.modules[m.id].params)DB.modules[m.id].params=[];});if(!DB.settings)DB.settings={globalRange:"7d"};save();toast("Imported");buildSettings();renderRangeBar();renderGrid();}catch(e){toast("Bad file");}};
   r.readAsText(f);};
 window.wipe=function(){if(confirm("Erase everything? Export a backup first.")){DB=freshDB();save();toast("Erased");buildSettings();renderGrid();}};
+
+/* ============ github gist cloud sync ============ */
+const GH_KEY="lifelog.gh";
+function ghCfg(){try{return JSON.parse(localStorage.getItem(GH_KEY))||{};}catch(e){return {};}}
+function ghSet(c){localStorage.setItem(GH_KEY,JSON.stringify(c));}
+function ghHeaders(c){return {"Authorization":"token "+c.token,"Accept":"application/vnd.github+json","Content-Type":"application/json"};}
+function normalizeDB(){DB.settings=DB.settings||{globalRange:"30d"};MODULES.forEach(m=>{if(!DB.modules[m.id])DB.modules[m.id]={entries:{},params:[],range:null};if(!DB.modules[m.id].params)DB.modules[m.id].params=[];});}
+window.ghSaveCfg=async function(){
+  const token=document.getElementById("ghTok").value.trim();
+  const gistId=document.getElementById("ghGist").value.trim();
+  ghSet({token,gistId});
+  if(!token){toast("Token cleared");buildSettings();return;}
+  await ghPush(true);buildSettings();
+};
+async function ghPush(manual){
+  const c=ghCfg();if(!c.token){if(manual)toast("Add a token first");return;}
+  const body={description:"Lifelog data",files:{"lifelog.json":{content:JSON.stringify(DB)}}};
+  try{
+    let res,id=c.gistId;
+    if(id){res=await fetch("https://api.github.com/gists/"+id,{method:"PATCH",headers:ghHeaders(c),body:JSON.stringify(body)});}
+    else{body.public=false;res=await fetch("https://api.github.com/gists",{method:"POST",headers:ghHeaders(c),body:JSON.stringify(body)});}
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const j=await res.json();
+    if(!id){c.gistId=j.id;ghSet(c);}
+    DB.settings._synced=Date.now();localStorage.setItem(KEY,JSON.stringify(DB));
+    if(manual)toast("Synced ✓");
+    const st=document.getElementById("ghStat");if(st)st.textContent="Synced "+new Date().toLocaleString();
+  }catch(e){if(manual)toast("Sync failed: "+e.message);}
+}
+window.ghPull=async function(manual){
+  const c=ghCfg();if(!c.token||!c.gistId){if(manual)toast("Save token + gist first");return;}
+  try{
+    const res=await fetch("https://api.github.com/gists/"+c.gistId,{headers:ghHeaders(c)});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const j=await res.json();const f=j.files&&j.files["lifelog.json"];
+    if(!f)throw new Error("no data file in gist");
+    let content=f.content;if(f.truncated&&f.raw_url)content=await (await fetch(f.raw_url)).text();
+    const remote=JSON.parse(content);
+    if(!remote||!remote.modules)throw new Error("bad data");
+    DB=remote;normalizeDB();localStorage.setItem(KEY,JSON.stringify(DB));
+    toast("Pulled ✓");buildSettings();renderRangeBar();renderGrid();initOverviewSel();drawOverview();
+  }catch(e){if(manual)toast("Pull failed: "+e.message);}
+};
+async function ghBootSync(){
+  const c=ghCfg();if(!c.token||!c.gistId)return;
+  try{
+    const res=await fetch("https://api.github.com/gists/"+c.gistId,{headers:ghHeaders(c)});
+    if(!res.ok)return;
+    const j=await res.json();const f=j.files&&j.files["lifelog.json"];if(!f)return;
+    let content=f.content;if(f.truncated&&f.raw_url)content=await (await fetch(f.raw_url)).text();
+    const remote=JSON.parse(content);if(!remote||!remote.modules)return;
+    const rt=(remote.settings&&remote.settings._updated)||0;
+    const lt=(DB.settings&&DB.settings._updated)||0;
+    if(rt>lt){DB=remote;normalizeDB();localStorage.setItem(KEY,JSON.stringify(DB));renderRangeBar();renderGrid();initOverviewSel();drawOverview();toast("Synced from cloud");}
+    else if(lt>rt){ghPush(false);}
+  }catch(e){}
+}
+
+/* ============ clear data by date range ============ */
+window.clearRange=function(){
+  const from=document.getElementById("clrFrom").value;
+  const to=document.getElementById("clrTo").value;
+  if(!from||!to){toast("Pick both dates");return;}
+  if(from>to){toast("From is after To");return;}
+  if(!confirm("Delete all entries from "+from+" to "+to+"? Cannot undo.")){return;}
+  let n=0;
+  MODULES.forEach(m=>{const md=DB.modules[m.id];
+    ["entries","dayEntries"].forEach(store=>{
+      if(!md[store])return;
+      Object.keys(md[store]).forEach(d=>{
+        if(d>=from&&d<=to){const e=md[store][d];n+=Array.isArray(e)?e.length:1;delete md[store][d];}
+      });
+    });
+  });
+  save();toast("Deleted "+n+" entries");buildSettings();renderGrid();renderGauge();
+};
 
 /* ============ weekly review ============ */
 function openWeekly(){buildWeekly();document.getElementById("wkSheet").classList.add("open");document.body.style.overflow="hidden";}
@@ -1036,55 +899,10 @@ window.drawOverview=function(){
 };
 function initOverviewSel(){const sel=document.getElementById("ovSel");sel.innerHTML=OV_METRICS.map((m,i)=>`<option value="${i}">${m.label}</option>`).join("");}
 
-/* ============ dummy sample data ============ */
-function rnd(seed){const x=Math.sin(seed*97.13+11.7)*10000;return x-Math.floor(x);}
-function dateBack(i){const d=new Date();d.setDate(d.getDate()-i);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function seedDummy(){
-  const M=DB.modules;
-  for(let i=0;i<30;i++){
-    const d=dateBack(i);const r=rnd(i);
-    // sleep: after 3am, wake 10am, ok hours bad timing, low quality
-    if(!M.sleep.entries[d])M.sleep.entries[d]={bed:"03:"+String(10+Math.floor(r*40)).padStart(2,"0"),wake:"10:"+String(5+Math.floor(rnd(i+1)*25)).padStart(2,"0"),hours:+(6.6+r*0.8).toFixed(1),quality:3+Math.floor(rnd(i+2)*3),sun:false,naps:0,_dummy:true};
-    // nutrition: no breakfast, light lunch + dinner, low protein
-    if(!M.nutrition.entries[d]){M.nutrition.entries[d]=[
-      {slot:"Lunch",meal:"Lunch",kcal:400,protein:8,carbs:60,fat:10,fiber:5,_id:i*10+1,_time:"13:30",_dummy:true},
-      {slot:"Dinner",meal:"Dinner",kcal:450,protein:9,carbs:65,fat:12,fiber:6,_id:i*10+2,_time:"21:30",_dummy:true}];}
-    M.nutrition.dayEntries=M.nutrition.dayEntries||{};
-    if(!M.nutrition.dayEntries[d])M.nutrition.dayEntries[d]={water:+(1.25+rnd(i+3)*1).toFixed(2),_dummy:true};
-    // fitness: none, weight flat ~68
-    M.fitness.dayEntries=M.fitness.dayEntries||{};
-    if(!M.fitness.dayEntries[d])M.fitness.dayEntries[d]={weight:+(68+ (rnd(i+4)-0.5)*0.6).toFixed(1),_dummy:true};
-    // mood: low energy
-    if(!M.mood.entries[d])M.mood.entries[d]={energy:3+Math.floor(rnd(i+5)*3),mood:4+Math.floor(rnd(i+6)*2),focus:3+Math.floor(rnd(i+7)*2),_dummy:true};
-    // habits: mostly missed
-    if(!M.habits.entries[d])M.habits.entries[d]={wake:false,meditate:false,noscreen:false,sunlight:false,_dummy:true};
-    // research/study: sparse low
-    if(rnd(i+8)>0.6&&!M.research.entries[d])M.research.entries[d]={deep:+(rnd(i+9)*1.5).toFixed(1),progress:"read a bit",_dummy:true};
-    if(rnd(i+10)>0.65&&!M.study.entries[d])M.study.entries[d]={topic:"misc",hours:+(rnd(i+11)*1.2).toFixed(1),_dummy:true};
-  }
-  DB.settings.dummy=true;DB.settings._seeded=true;save();
-}
-function clearDummy(){
-  MODULES.forEach(m=>{const md=DB.modules[m.id];
-    Object.keys(md.entries).forEach(d=>{
-      const e=md.entries[d];
-      if(Array.isArray(e)){md.entries[d]=e.filter(x=>!x._dummy);if(!md.entries[d].length)delete md.entries[d];}
-      else if(e&&e._dummy){delete md.entries[d];}
-    });
-    if(md.dayEntries)Object.keys(md.dayEntries).forEach(d=>{if(md.dayEntries[d]&&md.dayEntries[d]._dummy)delete md.dayEntries[d];});
-  });
-  DB.settings.dummy=false;DB.settings._seeded=true;save();
-}
-window.toggleDummy=function(){
-  if(DB.settings.dummy){clearDummy();toast("Sample data off");}
-  else{seedDummy();toast("Sample data on");}
-  buildSettings();renderGrid();initOverviewSel();drawOverview();
-};
-
 /* ============ boot ============ */
-if(DB.settings.dummy&&!DB.settings._seeded)seedDummy();
 initOverviewSel();
 renderRangeBar();renderGrid();
+(function(){const c=ghCfg();if(c&&c.token&&c.gistId)ghBootSync();})();
 setInterval(renderGauge,60000);
 // close sheets on back gesture-ish: escape
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSheet();closeSet();closeWeekly();}});
