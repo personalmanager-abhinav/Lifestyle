@@ -9,7 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="Lifelog">
 <meta name="theme-color" content="#0d2818">
 <title>Lifelog</title>
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230d2818'/%3E%3Ccircle cx='90' cy='108' r='30' fill='none' stroke='%234ade80' stroke-width='6'/%3E%3Cline x1='90' y1='108' x2='90' y2='86' stroke='%234ade80' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='90' y1='108' x2='106' y2='108' stroke='%23a3e635' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -91,7 +93,7 @@
 const KEY="lifelog.v1";
 const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
-function save(){DB.settings=DB.settings||{};DB.settings._updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast("Save failed — storage full?");}schedulePush();}
+function save(){DB.settings=DB.settings||{};DB.settings._updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast("Save failed — storage full?");}if(typeof clearThr==="function")clearThr();schedulePush();}
 let _pushT=null;
 function schedulePush(){const c=ghCfg();if(!c||!c.token)return;clearTimeout(_pushT);_pushT=setTimeout(()=>ghPush(false),2500);}
 
@@ -778,7 +780,7 @@ function wkLine(l,v){return `<div class="wk-line"><span>${l}</span><span class="
 /* ============ daily throttle score ============ */
 function num(v){return (v===undefined||v===null||v==="")?null:(isNaN(+v)?null:+v);}
 function clamp01(x){return x<0?0:x>1?1:x;}
-function throttleForDate(d){
+function rawThrottle(d){
   const M=DB.modules;const parts=[];
   // sleep: hours near 7.5 ideal + quality + timing (bed before 1am)
   const s=M.sleep.entries[d];
@@ -786,29 +788,88 @@ function throttleForDate(d){
     if(num(s.hours)!==null){const h=+s.hours;sc+=clamp01(1-Math.abs(h-7.5)/4);w++;}
     if(num(s.quality)!==null){sc+=(+s.quality)/10;w++;}
     if(s.bed){const hh=+s.bed.split(":")[0];const bedGood=(hh>=21||hh<=1)?1:(hh<=3?0.3:0);sc+=bedGood;w++;}
-    if(w)parts.push([sc/w,1.4]);
+    if(w)parts.push([sc/w,1.0]);
   }
   // exercise
   const fx=M.fitness.entries[d]||[];const mins=fx.reduce((a,e)=>a+(num(e.mins)||0),0);
-  if(fx.length)parts.push([clamp01(mins/40),1.2]);
+  if(fx.length)parts.push([clamp01(mins/40),1.0]);
   // nutrition: meals + protein
   const nu=M.nutrition.entries[d]||[];const meals=nu.length;const prot=nu.reduce((a,e)=>a+(num(e.protein)||0),0);
-  if(nu.length)parts.push([clamp01(meals/3)*0.5+clamp01(prot/60)*0.5,1.2]);
+  if(nu.length)parts.push([clamp01(meals/3)*0.5+clamp01(prot/60)*0.5,1.0]);
   // study + research hours (only count if logged; logged 0h counts as 0)
   const st=M.study.entries[d],re=M.research.entries[d];
   if(st||re){const hrs=(st&&num(st.hours)||0)+(re&&num(re.deep)||0);
-    parts.push([clamp01(hrs/6),1.2]);}
+    parts.push([clamp01(hrs/6),1.0]);}
   // habits
-  const hb=M.habits.entries[d];if(hb){const c=["wake","meditate","noscreen","sunlight"].filter(k=>hb[k]).length;parts.push([c/4,1]);}
-  // energy
-  const mo=M.mood.entries[d];if(mo&&num(mo.energy)!==null)parts.push([(+mo.energy)/10,1]);
-  // water
+  const hb=M.habits.entries[d];if(hb){const c=["wake","meditate","noscreen","sunlight"].filter(k=>hb[k]).length;parts.push([c/4,1.0]);}
+  // water (lighter weight)
   const wa=M.nutrition.dayEntries&&M.nutrition.dayEntries[d]?num(M.nutrition.dayEntries[d].water):null;
   if(wa!==null)parts.push([clamp01(wa/3),0.6]);
-  const anyReal=s||fx.length||nu.length||st||re||hb||mo||wa!==null;
+  // code + github: commits (3 = full); a commit flag floors it
+  const cd=M.code.entries[d];
+  if(cd){let sc=clamp01((num(cd.commits)||0)/3);if(cd.committed)sc=Math.max(sc,0.6);parts.push([sc,1.0]);}
+  // leetcode: total solved (3 = full)
+  const lc=M.leetcode.entries[d]||[];
+  if(lc.length){const solved=lc.reduce((a,e)=>a+(num(e.solved)||0),0);parts.push([clamp01(solved/3),1.0]);}
+  // gate 2027 prep
+  const gt=M.gate.entries[d];if(gt)parts.push([gt.done?1:0,1.0]);
+  // reading pages (20 = full)
+  const rd=M.reading.entries[d]||[];
+  if(rd.length){const pg=rd.reduce((a,e)=>a+(num(e.pages)||0),0);parts.push([clamp01(pg/20),1.0]);}
+  // kaggle / linux / coursera — toggles
+  const kg=M.kaggle.entries[d];if(kg)parts.push([kg.done?1:0,1.0]);
+  const lx=M.linux.entries[d];if(lx)parts.push([lx.done?1:0,1.0]);
+  const cr=M.coursera.entries[d];if(cr)parts.push([cr.done?1:0,1.0]);
+  const anyReal=s||fx.length||nu.length||st||re||hb||wa!==null||cd||lc.length||gt||rd.length||kg||lx||cr;
   if(!anyReal)return null;
   let sw=0,tw=0;parts.forEach(([v,w])=>{sw+=v*w;tw+=w;});
   return Math.round(clamp01(sw/tw)*100);
+}
+
+/* ===== momentum: compounding drag (opt.3) + carryover (opt.4) ===== */
+let _thrCache={};
+function clearThr(){_thrCache={};}
+function prevDay(d){const[y,m,dd]=d.split("-").map(Number);const t=new Date(y,m-1,dd);t.setDate(t.getDate()-1);
+  return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0");}
+function firstEntryDate(){
+  if(_thrCache._first!==undefined)return _thrCache._first;
+  let min=null;MODULES.forEach(m=>{const md=DB.modules[m.id];
+    if(md.entries)Object.keys(md.entries).forEach(d=>{if(!min||d<min)min=d;});
+    if(md.dayEntries)Object.keys(md.dayEntries).forEach(d=>{if(!min||d<min)min=d;});});
+  return _thrCache._first=min;}
+// a "miss" day = ANY of the 13 odometer areas not done
+function isMissDay(d){const M=DB.modules;
+  const s=M.sleep.entries[d];
+  const fx=M.fitness.entries[d]||[];const mins=fx.reduce((a,e)=>a+(num(e.mins)||0),0);
+  const nu=M.nutrition.entries[d]||[];
+  const st=M.study.entries[d],re=M.research.entries[d];const hrs=(st&&num(st.hours)||0)+(re&&num(re.deep)||0);
+  const hb=M.habits.entries[d];const hc=hb?["wake","meditate","noscreen","sunlight"].filter(k=>hb[k]).length:0;
+  const wa=M.nutrition.dayEntries&&M.nutrition.dayEntries[d]?num(M.nutrition.dayEntries[d].water):null;
+  const cd=M.code.entries[d];
+  const lc=M.leetcode.entries[d]||[];const solved=lc.reduce((a,e)=>a+(num(e.solved)||0),0);
+  const gt=M.gate.entries[d];
+  const rd=M.reading.entries[d]||[];const pg=rd.reduce((a,e)=>a+(num(e.pages)||0),0);
+  const kg=M.kaggle.entries[d],lx=M.linux.entries[d],cr=M.coursera.entries[d];
+  const done=[!!s,mins>0,nu.length>0,hrs>0,hc>0,(wa||0)>0,
+    !!(cd&&(cd.committed||(num(cd.commits)||0)>0)),solved>0,!!(gt&&gt.done),pg>0,
+    !!(kg&&kg.done),!!(lx&&lx.done),!!(cr&&cr.done)];
+  return done.some(x=>!x);}
+// consecutive miss days ending at d (0 if today not a miss). bounded by first log + cap 12
+function missStreak(d){const first=firstEntryDate();if(!first)return 0;
+  let n=0,cur=d;while(cur>=first&&n<12){if(isMissDay(cur)){n++;cur=prevDay(cur);}else break;}return n;}
+// triangular penalty: 1→3, 2→6, 3→10, 4→15 … capped 40
+function missDrag(s){return s<=0?0:Math.min(40,(s+1)*(s+2)/2);}
+function throttleForDate(d){
+  if(_thrCache[d]!==undefined)return _thrCache[d];
+  _thrCache[d]=null; // guard against re-entry
+  const raw=rawThrottle(d);
+  if(raw===null)return _thrCache[d]=null;
+  let adj=raw-missDrag(missStreak(d));if(adj<0)adj=0;if(adj>100)adj=100;
+  // carryover: 30% of most recent logged day's final score
+  const first=firstEntryDate();let p=prevDay(d),guard=0,prevF=null;
+  while(first&&p>=first&&guard<400){if(rawThrottle(p)!==null){prevF=throttleForDate(p);break;}p=prevDay(p);guard++;}
+  const val=(prevF===null)?adj:(0.7*adj+0.3*prevF);
+  return _thrCache[d]=Math.round(val);
 }
 function throttleWord(v){
   if(v<35)return["Idle","#dc2626"];       // red
@@ -817,6 +878,7 @@ function throttleWord(v){
 }
 function gaugePt(a,rad){const r=a*Math.PI/180;return [100+rad*Math.cos(r),100-rad*Math.sin(r)];}
 function renderGauge(){
+  clearThr();
   const v=throttleForDate(todayStr());
   const svg=document.getElementById("gaugeSvg");
   document.getElementById("gaugeDate").textContent=new Date().toLocaleDateString(undefined,{day:"numeric",month:"short"});
@@ -891,6 +953,7 @@ function svgLine(svgEl,statEl,pts){
   if(statEl){const avg=vals.reduce((a,b)=>a+b,0)/vals.length;statEl.innerHTML=`<span>avg <b>${avg.toFixed(1)}</b></span><span>min <b>${mn.toFixed(1)}</b></span><span>max <b>${mx.toFixed(1)}</b></span><span>days <b>${vals.length}</b></span>`;}
 }
 window.drawOverview=function(){
+  clearThr();
   const sel=document.getElementById("ovSel");if(!sel)return;
   const mt=OV_METRICS[+sel.value]||OV_METRICS[0];
   const days=globalDays();
